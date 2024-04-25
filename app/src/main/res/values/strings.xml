@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Albums</string>
+    <string-array name="movies_array">
+        <item>Bullet Train|2022</item>
+        <item>Top Gun: Maverick|2022</item>
+        <item>The Power of the Dog|2021</item>
+        <item>Minari|2020</item>
+        <item>Once Upon a Time in Hollywood|2019</item>
+        <item>Widows|2018</item>
+        <item>Black Panther|2018</item>
+        <item>Get Out|2017</item>
+        <item>Logan|2017</item>
+        <item>Doctor Strange|2016</item>
+        <item>Jason Bourne|2016</item>
+        <item>Sully|2016</item>
+        <item>The Martian|2015</item>
+        <item>Mad Max:Fury Road|2015</item>
+        <item>Sicario|2015</item>
+        <item>American Sniper|2014</item>
+        <item>The Gift|2010</item>
+    </string-array>
+
+    <string name="name_label">Name: (required)</string>
+    <string name="year_label">Year: (required)</string>
+    <string name="director_label">Director:</string>
+    <string name="year_hint">2023</string>
+    <string name="save_label">SAVE</string>
+    <string name="cancel_label">CANCEL</string>
+    <string name="menu_add">Add</string>
+</resources>
