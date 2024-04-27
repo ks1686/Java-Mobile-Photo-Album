@@ -39,7 +39,6 @@ public class OpenAlbum extends AppCompatActivity {
         addPhotoButton.setOnClickListener(view -> selectImage());
 
         RecyclerView image_list_view = findViewById(R.id.image_list_view);
-        image_list_view.setAdapter(new ImageAdapter(this, new ArrayList<>()));
 
 
         myToolbar.setNavigationOnClickListener(view -> returnToAlbumsList());
