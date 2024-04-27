@@ -59,7 +59,7 @@ import java.util.List;
 public class Photos extends AppCompatActivity {
 
     private ListView listView;
-    private List<Album> albums;
+    public static List<Album> albums;
     private ActivityResultLauncher<Intent> startForAlbumOpen;
     private ActivityResultLauncher<Intent> cancelForAlbumOpen;
 
