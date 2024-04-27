@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -221,6 +222,16 @@ public class Photos extends AppCompatActivity implements Serializable {
             public void onClick(DialogInterface dialog, int which) {
                 String albumName = input.getText().toString();
                 Album album = new Album(albumName);
+
+                // check if the album exists already
+                for (Album a : albums) {
+                    if (a.getAlbumName().equals(albumName)) {
+                        // toast message that album already exists
+                        Toast.makeText(Photos.this, "Album already exists", Toast.LENGTH_SHORT).show();
+
+                        return;
+                    }
+                }
                 albums.add(album);
                 listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
                 saveAlbumsToFile();
