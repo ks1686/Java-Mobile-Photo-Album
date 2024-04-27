@@ -47,6 +47,7 @@ public class OpenAlbum extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_GET = 1;
 
+    // select an image from the gallery
     public void selectImage() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
@@ -55,6 +56,7 @@ public class OpenAlbum extends AppCompatActivity {
         }
     }
 
+    // get the result of the image selection
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

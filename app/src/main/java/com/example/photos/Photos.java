@@ -63,9 +63,9 @@ public class Photos extends AppCompatActivity {
     private ActivityResultLauncher<Intent> startForAlbumOpen;
 
     public List<String> getAlbumNames() {
-        List<String> albumNames = new ArrayList();
-        for (Album a : albums) {
-            albumNames.add(a.getAlbumName());
+        List<String> albumNames = new ArrayList<>();
+        for (Album album : albums) {
+            albumNames.add(album.getAlbumName());
         }
         return albumNames;
     }
@@ -102,16 +102,16 @@ public class Photos extends AppCompatActivity {
         File file = new File(getFilesDir(), "albums.json");
         try {
             if (!file.exists()) {
-                return albums;
+                file.createNewFile();
             }
             FileInputStream fis = new FileInputStream(file);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-            StringBuilder jsonString = new StringBuilder();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fis));
+            StringBuilder stringBuilder = new StringBuilder();
             String line;
-            while ((line = reader.readLine()) != null) {
-                jsonString.append(line);
+            while ((line = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line);
             }
-            JSONArray jsonArray = new JSONArray(jsonString.toString());
+            JSONArray jsonArray = new JSONArray(stringBuilder.toString());
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 Album album = new Album(jsonObject.getString("albumName"));
@@ -161,53 +161,45 @@ public class Photos extends AppCompatActivity {
         registerActivities();
     }
 
+    // register the activities
     public void registerActivities() {
-        startForAlbumOpen =
-                registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                        result -> {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                applyAlbumEdit(result);
-                            }
-                        });
+        startForAlbumOpen = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                this::applyAlbumEdit);
     }
 
     private void applyAlbumEdit(ActivityResult result) {
-        Intent intent = result.getData();
-        Bundle bundle = intent.getExtras();
+        if (result.getResultCode() == Activity.RESULT_OK) {
+            // get the album index and album name
+            Intent data = result.getData();
+            int albumIndex = data.getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
+            String albumName = data.getStringExtra(OpenAlbum.ALBUM_NAME);
 
-        if (bundle == null) {
-            return;
+            // update the album name
+            albums.get(albumIndex).setAlbumName(albumName);
+            listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+            saveAlbumsToFile();
         }
-
-        // gather all info passed back by launched activity
-        String albumName = bundle.getString(OpenAlbum.ALBUM_NAME);
-        int albumIndex = bundle.getInt(OpenAlbum.ALBUM_INDEX);
-
-        listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
     }
 
     private void showAlbum(int pos) {
-        // TODO: implement this method
-        Bundle bundle = new Bundle();
-        Album movie = albums.get(pos);
-        bundle.putInt(OpenAlbum.ALBUM_INDEX, pos);
-        bundle.putString(OpenAlbum.ALBUM_NAME, movie.getAlbumName());
-
-        // launch for edit
         Intent intent = new Intent(this, OpenAlbum.class);
-        intent.putExtras(bundle);
+        intent.putExtra(OpenAlbum.ALBUM_INDEX, pos);
+        intent.putExtra(OpenAlbum.ALBUM_NAME, albums.get(pos).getAlbumName());
         startForAlbumOpen.launch(intent);
     }
 
     private void createAlbum() {
-        System.out.println("Create album function called");
+        // create an AlertDialog to get the album name
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter album name");
+        builder.setTitle("Create Album");
 
+        // create an EditText for the dialog
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
 
+        // set up the buttons
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -215,6 +207,7 @@ public class Photos extends AppCompatActivity {
                 Album album = new Album(albumName);
                 albums.add(album);
                 listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+                saveAlbumsToFile();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -224,7 +217,7 @@ public class Photos extends AppCompatActivity {
             }
         });
 
-
+        // show the dialog
         builder.show();
     }
 
