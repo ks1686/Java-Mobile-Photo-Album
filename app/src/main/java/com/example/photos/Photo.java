@@ -157,6 +157,11 @@ public class Photo implements Serializable {
             throw new IllegalArgumentException("value cannot be empty");
         }
 
+        // key  can only be "person" or "location"
+        if (!key.equals("person") && !key.equals("location")) {
+            throw new IllegalArgumentException("key must be either 'person' or 'location'");
+        }
+
         Map<String, String> tag = Map.of(key, value);
         tags.add(tag);
     }

@@ -98,7 +98,7 @@ public class Album implements Serializable {
         return albumName;
     }
 
-    /**
+    /**f
      * set the name of the album
      *
      * @param albumName the name of the album

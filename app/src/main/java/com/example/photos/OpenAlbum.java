@@ -4,30 +4,45 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.movies.R;
 
 public class OpenAlbum extends AppCompatActivity {
 
-    public static final String ALBUM_NAME = "";
-    public static final String ALBUM_INDEX = "";
+    public static final String ALBUM_NAME = "albumName";
+    public static final String ALBUM_INDEX = "albumIndex";
     private int albumIndex;
 
     private EditText albumName;
+    private Button deleteAlbumButton;
+    private Toolbar myToolbar;
+    private Button addPhotoButton;
+    private RecyclerView image_list_view;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("In onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.open_album);
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        myToolbar.setTitle(ALBUM_NAME + " Photos");
+        myToolbar = findViewById(R.id.my_toolbar);
+        deleteAlbumButton = findViewById(R.id.delete_album_button);
         setSupportActionBar(myToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        addPhotoButton = findViewById(R.id.add_photo_button);
+        addPhotoButton.setOnClickListener(view -> selectImage());
+
+        RecyclerView image_list_view = findViewById(R.id.image_list_view);
+        image_list_view.setAdapter(new ImageAdapter(this, new ArrayList<>()));
+
+
+        myToolbar.setNavigationOnClickListener(view -> returnToAlbumsList());
 
         // get the fields
         albumName = findViewById(R.id.album_name);
@@ -41,11 +56,38 @@ public class OpenAlbum extends AppCompatActivity {
 
         // set albumName text to the album name
         albumName.setText(extras.getString(ALBUM_NAME));
-        System.out.println("Album name: " + extras.getString(ALBUM_NAME));
-        selectImage();
+
+        deleteAlbumButton.setOnClickListener(view -> deleteAlbum());
+
     }
 
     static final int REQUEST_IMAGE_GET = 1;
+
+
+    public void returnToAlbumsList(){
+        String album_name_string = albumName.getText().toString();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(ALBUM_NAME, album_name_string);
+        bundle.putInt(ALBUM_INDEX, albumIndex);
+
+
+        Intent intent = new Intent();
+        System.out.println("In returnToAlbumsList, albumIndex is: " + albumIndex);
+        System.out.println("In returnToAlbumsList, ALBUM_INDEX is: " + ALBUM_INDEX);
+        System.out.println("In returnToAlbumsList, album_name_string is: " + album_name_string);
+        System.out.println("In returnToAlbumsList, ALBUM_NAME is: " + ALBUM_NAME);
+        intent.putExtras(bundle);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    public void deleteAlbum() {
+        Intent intent = new Intent();
+        intent.putExtra(ALBUM_INDEX, albumIndex);
+        setResult(RESULT_CANCELED, intent);
+        finish();
+    }
 
     // select an image from the gallery
     public void selectImage() {

@@ -61,6 +61,7 @@ public class Photos extends AppCompatActivity {
     private ListView listView;
     private List<Album> albums;
     private ActivityResultLauncher<Intent> startForAlbumOpen;
+    private ActivityResultLauncher<Intent> cancelForAlbumOpen;
 
     public List<String> getAlbumNames() {
         List<String> albumNames = new ArrayList<>();
@@ -172,11 +173,20 @@ public class Photos extends AppCompatActivity {
         if (result.getResultCode() == Activity.RESULT_OK) {
             // get the album index and album name
             Intent data = result.getData();
+            // parse OpenAlbum.ALBUM_INDEX as a string
             int albumIndex = data.getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
             String albumName = data.getStringExtra(OpenAlbum.ALBUM_NAME);
-
+            System.out.println("In applyAlbumEdit, albumIndex is: " + albumIndex);
+            System.out.println("In applyAlbumEdit, albumName is: " + albumName);
             // update the album name
             albums.get(albumIndex).setAlbumName(albumName);
+            listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+            saveAlbumsToFile();
+        } else if (result.getResultCode() == Activity.RESULT_CANCELED){
+            // delete the album
+            Intent data = result.getData();
+            int albumIndex = data.getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
+            albums.remove(albumIndex);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
             saveAlbumsToFile();
         }
