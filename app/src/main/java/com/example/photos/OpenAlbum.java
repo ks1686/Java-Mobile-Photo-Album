@@ -96,6 +96,8 @@ public class OpenAlbum extends AppCompatActivity {
     private RecyclerView imageListView;
     private ImageAdapter imageAdapter;
 
+    private Button renameAlbumButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +109,10 @@ public class OpenAlbum extends AppCompatActivity {
 
         addPhotoButton = findViewById(R.id.add_photo_button);
         addPhotoButton.setOnClickListener(view -> selectImage());
+
+        renameAlbumButton = findViewById(R.id.rename_album_button);
+        renameAlbumButton.setOnClickListener(view -> renameAlbum());
+
 
         imageListView = findViewById(R.id.image_list_view);
         int numberOfColumns = 3;
@@ -138,6 +144,7 @@ public class OpenAlbum extends AppCompatActivity {
         System.out.println("In onImageChosen");
     }
 
+
     public void returnToAlbumsList(){
         String album_name_string = albumName.getText().toString();
 
@@ -156,6 +163,13 @@ public class OpenAlbum extends AppCompatActivity {
         intent.putExtra(ALBUM_INDEX, albumIndex);
         setResult(RESULT_CANCELED, intent);
         finish();
+    }
+
+    // method to rename the album
+    public void renameAlbum() {
+        String albumNameString = albumName.getText().toString();
+        Photos.albums.get(albumIndex).setAlbumName(albumNameString);
+        saveAlbumsToFile();
     }
 
     public void selectImage() {
