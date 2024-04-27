@@ -18,7 +18,7 @@ import java.util.Map;
  */
 public class Album implements Serializable {
     private String albumName;
-    private final List<Photo> photos;
+    private List<Photo> photos;
 
     /**
      * Creates an album with the given name and an empty list of photos.

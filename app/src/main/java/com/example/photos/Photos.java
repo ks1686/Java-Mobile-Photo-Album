@@ -33,6 +33,7 @@ import org.json.JSONException;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,12 +57,15 @@ import java.util.List;
         return name + "|" + year + "|" + director;
     }
 } */
-public class Photos extends AppCompatActivity {
+public class Photos extends AppCompatActivity implements Serializable {
 
-    private ListView listView;
+    public static final String storeDir = "data";
+    public static final String storeFile = "data.dat";
+    private static final long serialVersionUID = 1L;
+    private transient ListView listView;
     public static List<Album> albums;
-    private ActivityResultLauncher<Intent> startForAlbumOpen;
-    private ActivityResultLauncher<Intent> cancelForAlbumOpen;
+    private transient ActivityResultLauncher<Intent> startForAlbumOpen;
+    private transient ActivityResultLauncher<Intent> cancelForAlbumOpen;
 
     public List<String> getAlbumNames() {
         List<String> albumNames = new ArrayList<>();
@@ -138,13 +142,15 @@ public class Photos extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.albums_toolbar);
         setSupportActionBar(myToolbar);
 
-        // get the FloatingActionButton with id create_album_button
-        // set an OnClickListener on the button to call addMovie
+
 
         FloatingActionButton createAlbumButton = findViewById(R.id.create_album_button);
         createAlbumButton.setOnClickListener(view -> createAlbum());
 
         albums = new ArrayList<>();
+        // temp: delete albums.json for debugging
+        // File file = new File(getFilesDir(), "albums.json");
+        // file.delete();
 
         albums = loadAlbums();
         saveAlbumsToFile();

@@ -23,6 +23,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.movies.R;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 public class OpenAlbum extends AppCompatActivity {
@@ -45,6 +52,9 @@ public class OpenAlbum extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+
             Photo photo = photos.get(position);
             holder.imageView.setImageURI(Uri.parse(photo.getFilePath()));
         }
@@ -65,6 +75,12 @@ public class OpenAlbum extends AppCompatActivity {
             public ImageViewHolder(@NonNull View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.image_view);
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        System.out.println("Photo clicked");
+                    }
+                });
             }
         }
     }
@@ -112,6 +128,8 @@ public class OpenAlbum extends AppCompatActivity {
         albumName.setText(extras.getString(ALBUM_NAME));
 
         deleteAlbumButton.setOnClickListener(view -> deleteAlbum());
+
+        List<Album> albums = Photos.albums;
     }
 
     static final int REQUEST_IMAGE_GET = 1;
@@ -147,7 +165,33 @@ public class OpenAlbum extends AppCompatActivity {
             startActivityForResult(intent, REQUEST_IMAGE_GET);
         }
     }
-
+    private void saveAlbumsToFile() {
+        List<Album> albums = Photos.albums;
+        File file = new File(getFilesDir(), "albums.json");
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileOutputStream fos = new FileOutputStream(file);
+            JSONArray jsonArray = new JSONArray();
+            for (Album album : albums) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("albumName", album.getAlbumName());
+                JSONArray photosJsonArray = new JSONArray();
+                for (Photo photo : album.getPhotos()) {
+                    JSONObject photoJsonObject = new JSONObject();
+                    photoJsonObject.put("name", photo.getFilePath());
+                    photosJsonArray.put(photoJsonObject);
+                }
+                jsonObject.put("photos", photosJsonArray);
+                jsonArray.put(jsonObject);
+            }
+            fos.write(jsonArray.toString().getBytes());
+            fos.close();
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -158,6 +202,12 @@ public class OpenAlbum extends AppCompatActivity {
             Photo newPhoto = new Photo(fullPhotoUri.toString());
             Photos.albums.get(albumIndex).addPhoto(newPhoto);
             imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
+            saveAlbumsToFile();
+
+            // print all albums
+            for (Album album : Photos.albums) {
+                System.out.println(album.toString());
+            }
         }
     }
 }
