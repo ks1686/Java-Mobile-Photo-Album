@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
@@ -65,22 +66,16 @@ public class OpenAlbum extends AppCompatActivity {
         }
 
         public void updatePhotos(List<Photo> newPhotos) {
-            this.photos = newPhotos;
+            photos = newPhotos;
             notifyDataSetChanged();
         }
 
         public class ImageViewHolder extends RecyclerView.ViewHolder {
-            ImageView imageView;
+            public ImageView imageView;
 
             public ImageViewHolder(@NonNull View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.image_view);
-                imageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        System.out.println("Photo clicked");
-                    }
-                });
             }
         }
     }
@@ -170,57 +165,71 @@ public class OpenAlbum extends AppCompatActivity {
         String albumNameString = albumName.getText().toString();
         Photos.albums.get(albumIndex).setAlbumName(albumNameString);
         saveAlbumsToFile();
+
+        //toast to show that the album has been renamed
+        Toast.makeText(this, "Album renamed", Toast.LENGTH_SHORT).show();
     }
 
     public void selectImage() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(intent, REQUEST_IMAGE_GET);
-        }
+        intent.putExtra("albumIndex", albumIndex);
+        intent.putExtra("albumName", albumName.getText().toString());
+        startActivityForResult(intent, REQUEST_IMAGE_GET);
     }
     private void saveAlbumsToFile() {
-        List<Album> albums = Photos.albums;
+        JSONArray albums = new JSONArray();
+        for (Album album : Photos.albums) {
+            JSONObject albumJson = new JSONObject();
+            try {
+                albumJson.put("albumName", album.getAlbumName());
+                JSONArray photos = new JSONArray();
+                for (Photo photo : album.getPhotos()) {
+                    photos.put(photo.getFilePath());
+                }
+                albumJson.put("photos", photos);
+                albums.put(albumJson);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String albumsString = albums.toString();
         File file = new File(getFilesDir(), "albums.json");
         try {
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            FileOutputStream fos = new FileOutputStream(file);
-            JSONArray jsonArray = new JSONArray();
-            for (Album album : albums) {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("albumName", album.getAlbumName());
-                JSONArray photosJsonArray = new JSONArray();
-                for (Photo photo : album.getPhotos()) {
-                    JSONObject photoJsonObject = new JSONObject();
-                    photoJsonObject.put("name", photo.getFilePath());
-                    photosJsonArray.put(photoJsonObject);
-                }
-                jsonObject.put("photos", photosJsonArray);
-                jsonArray.put(jsonObject);
-            }
-            fos.write(jsonArray.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(albumsString.getBytes());
+            fileOutputStream.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    // method to save the updated album with the new photo
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK && data != null) {
-            Bitmap thumbnail = data.getParcelableExtra("data");
-            Uri fullPhotoUri = data.getData();
-            // add this photo to albums
-            Photo newPhoto = new Photo(fullPhotoUri.toString());
-            Photos.albums.get(albumIndex).addPhoto(newPhoto);
-            imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
-            saveAlbumsToFile();
+        if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
+            // grant uri permissions
+            getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            // print all albums
+            Uri uri = data.getData();
+            // get the string filepath for the single photo
+            String filePath = uri.toString();
+            // if filepath not null, add to the album
+            if (filePath != null) {
+                Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
+                saveAlbumsToFile();
+                imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
+            } else {
+                Toast.makeText(this, "No photo selected", Toast.LENGTH_SHORT).show();
+            }
+
+            // print all albums and their photos
             for (Album album : Photos.albums) {
-                System.out.println(album.toString());
+                System.out.println(album.getAlbumName());
+                for (Photo photo : album.getPhotos()) {
+                    System.out.println(photo.getFilePath());
+                }
             }
         }
     }

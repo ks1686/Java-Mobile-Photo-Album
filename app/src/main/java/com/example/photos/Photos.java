@@ -1,9 +1,11 @@
 package com.example.photos;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Menu;
@@ -20,6 +22,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.movies.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -107,9 +111,6 @@ public class Photos extends AppCompatActivity implements Serializable {
         List<Album> albums = new ArrayList<>();
         File file = new File(getFilesDir(), "albums.json");
         try {
-            if (!file.exists()) {
-                file.createNewFile();
-            }
             FileInputStream fis = new FileInputStream(file);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fis));
             StringBuilder stringBuilder = new StringBuilder();
@@ -128,22 +129,34 @@ public class Photos extends AppCompatActivity implements Serializable {
                 }
                 albums.add(album);
             }
-            fis.close();
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
         return albums;
     }
 
+    // method to request permission for image` access using READ_MEDIA_IMAGE
+    private void requestPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                    1);
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.albums_list);
 
+
         Toolbar myToolbar = findViewById(R.id.albums_toolbar);
         setSupportActionBar(myToolbar);
 
-
+        // request permission for photos access
+        requestPermission();
 
         FloatingActionButton createAlbumButton = findViewById(R.id.create_album_button);
         createAlbumButton.setOnClickListener(view -> createAlbum());
@@ -174,6 +187,9 @@ public class Photos extends AppCompatActivity implements Serializable {
         startForAlbumOpen = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 this::applyAlbumEdit);
+        cancelForAlbumOpen = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                this::applyAlbumEdit);
     }
 
     private void applyAlbumEdit(ActivityResult result) {
@@ -189,6 +205,12 @@ public class Photos extends AppCompatActivity implements Serializable {
             albums.get(albumIndex).setAlbumName(albumName);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
             saveAlbumsToFile();
+
+            // print all images in the album
+            for (Photo photo : albums.get(albumIndex).getPhotos()) {
+                System.out.println(photo.getFilePath());
+            }
+
         } else if (result.getResultCode() == Activity.RESULT_CANCELED){
             // delete the album
             Intent data = result.getData();
@@ -207,44 +229,32 @@ public class Photos extends AppCompatActivity implements Serializable {
     }
 
     private void createAlbum() {
-        // create an AlertDialog to get the album name
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Create Album");
-
-        // create an EditText for the dialog
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         builder.setView(input);
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String albumName = input.getText().toString();
 
-        // set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String albumName = input.getText().toString();
-                Album album = new Album(albumName);
+            // check if album name is empty or already exists
+            if (albumName.isEmpty()) {
+                Toast.makeText(Photos.this, "Album name cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                // check if the album exists already
-                for (Album a : albums) {
-                    if (a.getAlbumName().equals(albumName)) {
-                        // toast message that album already exists
-                        Toast.makeText(Photos.this, "Album already exists", Toast.LENGTH_SHORT).show();
-
-                        return;
-                    }
+            for (Album album : albums) {
+                if (album.getAlbumName().equals(albumName)) {
+                    Toast.makeText(Photos.this, "Album already exists", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                albums.add(album);
-                listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
-                saveAlbumsToFile();
             }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
 
-        // show the dialog
+            albums.add(new Album(albumName));
+            listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+            saveAlbumsToFile();
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
     }
 
