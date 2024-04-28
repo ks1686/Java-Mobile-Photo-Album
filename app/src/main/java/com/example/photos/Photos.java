@@ -42,26 +42,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-/* class Movie {
-    String name;
-    String year;
-    String director;
-    Movie(String name, String year) {
-        this.name = name;
-        this.year = year;
-        this.director = "";
-    }
-    Movie(String name, String year, String director) {
-        this(name, year);
-        this.director = director;
-    }
-    public String toString() {   // used by ListView
-        return name + "\n(" + year + ")";
-    }
-    public String getString() {
-        return name + "|" + year + "|" + director;
-    }
-} */
+
 public class Photos extends AppCompatActivity implements Serializable {
 
     public static final String storeDir = "data";
@@ -74,7 +55,7 @@ public class Photos extends AppCompatActivity implements Serializable {
 
     public List<String> getAlbumNames() {
         List<String> albumNames = new ArrayList<>();
-        for (Album album : albums) {
+        for (Album album : Photos.albums) {
             albumNames.add(album.getAlbumName());
         }
         return albumNames;
@@ -88,7 +69,7 @@ public class Photos extends AppCompatActivity implements Serializable {
             }
             FileOutputStream fos = new FileOutputStream(file);
             JSONArray jsonArray = new JSONArray();
-            for (Album album : albums) {
+            for (Album album : Photos.albums) {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("albumName", album.getAlbumName());
                 JSONArray photosJsonArray = new JSONArray();
@@ -108,7 +89,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     }
 
     private List<Album> loadAlbums() {
-        List<Album> albums = new ArrayList<>();
+        List<Album> albumsTemp = new ArrayList<>();
         File file = new File(getFilesDir(), "albums.json");
         try {
             FileInputStream fis = new FileInputStream(file);
@@ -127,12 +108,12 @@ public class Photos extends AppCompatActivity implements Serializable {
                     JSONObject photoJsonObject = photosJsonArray.getJSONObject(j);
                     album.addPhoto(new Photo(photoJsonObject.getString("name")));
                 }
-                albums.add(album);
+                albumsTemp.add(album);
             }
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
-        return albums;
+        return albumsTemp;
     }
 
     // method to request permission for image` access using READ_MEDIA_IMAGE
@@ -161,7 +142,6 @@ public class Photos extends AppCompatActivity implements Serializable {
         FloatingActionButton createAlbumButton = findViewById(R.id.create_album_button);
         createAlbumButton.setOnClickListener(view -> createAlbum());
 
-        albums = new ArrayList<>();
         // temp: delete albums.json for debugging
         // File file = new File(getFilesDir(), "albums.json");
         // file.delete();
@@ -169,7 +149,6 @@ public class Photos extends AppCompatActivity implements Serializable {
         albums = loadAlbums();
         saveAlbumsToFile();
         // albums.json will store the list of albums and their photos
-        // albums.json will be stored in the data directory
 
         listView = findViewById(R.id.albums_list);
         listView.setAdapter(
@@ -193,6 +172,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     }
 
     private void applyAlbumEdit(ActivityResult result) {
+        System.out.println("In applyAlbumEdit. Result code is: " + result.getResultCode() + ". and Albums is: " + Photos.albums);
         if (result.getResultCode() == Activity.RESULT_OK) {
             // get the album index and album name
             Intent data = result.getData();
@@ -201,13 +181,14 @@ public class Photos extends AppCompatActivity implements Serializable {
             String albumName = data.getStringExtra(OpenAlbum.ALBUM_NAME);
             System.out.println("In applyAlbumEdit, albumIndex is: " + albumIndex);
             System.out.println("In applyAlbumEdit, albumName is: " + albumName);
+
             // update the album name
-            albums.get(albumIndex).setAlbumName(albumName);
+            Photos.albums.get(albumIndex).setAlbumName(albumName);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
             saveAlbumsToFile();
 
             // print all images in the album
-            for (Photo photo : albums.get(albumIndex).getPhotos()) {
+            for (Photo photo : Photos.albums.get(albumIndex).getPhotos()) {
                 System.out.println(photo.getFilePath());
             }
 
@@ -215,23 +196,17 @@ public class Photos extends AppCompatActivity implements Serializable {
             // delete the album
             Intent data = result.getData();
             int albumIndex = data.getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
-            albums.remove(albumIndex);
+            Photos.albums.remove(albumIndex);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
             saveAlbumsToFile();
         }
     }
 
     private void showAlbum(int pos) {
-        // debugging: print the name of the selected album
-        System.out.println("Selected album: " + albums.get(pos).getAlbumName());
-
-        // print pos
-        System.out.println("Selected album index: " + pos);
-
         // create an intent to open the album
         Intent intent = new Intent(this, OpenAlbum.class);
         intent.putExtra("albumIndex", pos);
-        intent.putExtra("albumName", albums.get(pos).getAlbumName());
+        intent.putExtra("albumName", Photos.albums.get(pos).getAlbumName());
         startForAlbumOpen.launch(intent);
     }
 
@@ -250,14 +225,14 @@ public class Photos extends AppCompatActivity implements Serializable {
                 return;
             }
 
-            for (Album album : albums) {
+            for (Album album : Photos.albums) {
                 if (album.getAlbumName().equals(albumName)) {
                     Toast.makeText(Photos.this, "Album already exists", Toast.LENGTH_SHORT).show();
                     return;
                 }
             }
 
-            albums.add(new Album(albumName));
+            Photos.albums.add(new Album(albumName));
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
             saveAlbumsToFile();
         });
