@@ -87,6 +87,18 @@ public class OpenAlbum extends AppCompatActivity {
                     public void onClick(View v) {
                         // open display photo view here
                         System.out.println("Photo clicked");
+
+                        // get the photo that was clicked
+                        Photo photo = photos.get(getAdapterPosition());
+                        String photoFilePath = photo.getFilePath();
+
+                        // ! Testing: print the photoFilePath
+                        System.out.println("photoFilePath: " + photoFilePath);
+
+                        // create a new intent to open the photo
+                        Intent intent = new Intent(context, OpenPhoto.class);
+                        intent.putExtra("photoFilePath", photoFilePath);
+                        context.startActivity(intent);
                     }
                 });
             }
