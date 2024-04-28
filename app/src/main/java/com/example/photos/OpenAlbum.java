@@ -39,11 +39,13 @@ public class OpenAlbum extends AppCompatActivity {
         private Context context;
         private List<Photo> photos;
 
+        // constructor to create the image adapter
         public ImageAdapter(Context context, List<Photo> photos) {
             this.context = context;
             this.photos = photos;
         }
 
+        // method to create the image view holder
         @NonNull
         @Override
         public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -51,6 +53,7 @@ public class OpenAlbum extends AppCompatActivity {
             return new ImageViewHolder(view);
         }
 
+        // method to bind the image view holder
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -58,18 +61,24 @@ public class OpenAlbum extends AppCompatActivity {
 
             Photo photo = photos.get(position);
             holder.imageView.setImageURI(Uri.parse(photo.getFilePath()));
+
+            // print the photos that are in the album
+            System.out.println(photo.getFilePath());
         }
 
+        // method to get the number of photos
         @Override
         public int getItemCount() {
             return photos.size();
         }
 
+        // method to update the photos
         public void updatePhotos(List<Photo> newPhotos) {
             photos = newPhotos;
             notifyDataSetChanged();
         }
 
+        // inner class to hold the image view
         public class ImageViewHolder extends RecyclerView.ViewHolder {
             public ImageView imageView;
 
@@ -80,8 +89,8 @@ public class OpenAlbum extends AppCompatActivity {
         }
     }
 
-    public static final String ALBUM_NAME = "albumName";
-    public static final String ALBUM_INDEX = "albumIndex";
+    public static String ALBUM_NAME = "albumName";
+    public static String ALBUM_INDEX = "albumIndex";
     private int albumIndex;
 
     private EditText albumName;
@@ -93,6 +102,7 @@ public class OpenAlbum extends AppCompatActivity {
 
     private Button renameAlbumButton;
 
+    //! ERROR: NEVER PASSING THE PROPER albumIndex
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,6 +122,12 @@ public class OpenAlbum extends AppCompatActivity {
         imageListView = findViewById(R.id.image_list_view);
         int numberOfColumns = 3;
         imageListView.setLayoutManager(new GridLayoutManager(this, numberOfColumns));
+
+        // print the album name and index
+        // ! ERROR: NEVER PASSING THE PROPER albumIndex or albumName
+        System.out.println("Test: " + albumIndex + " " + Photos.albums.get(albumIndex).getAlbumName());
+        //print the ALBUM_INDEX and ALBUM_NAME
+        System.out.println("Test: " + ALBUM_INDEX + " " + ALBUM_NAME);
         Album album = Photos.albums.get(albumIndex);
         imageAdapter = new ImageAdapter(this, album.getPhotos());
         imageListView.setAdapter(imageAdapter);
@@ -126,11 +142,17 @@ public class OpenAlbum extends AppCompatActivity {
             albumName.setText(extras.getString("albumName"));
         }
 
+        //Print albumIndex and albumName
+        System.out.println("albumIndex: " + albumIndex);
+
         albumName.setText(extras.getString(ALBUM_NAME));
 
         deleteAlbumButton.setOnClickListener(view -> deleteAlbum());
 
         List<Album> albums = Photos.albums;
+
+        // update the view with the correct album (based on the corret albumIndex)
+        imageAdapter.updatePhotos(albums.get(albumIndex).getPhotos());
     }
 
     static final int REQUEST_IMAGE_GET = 1;
@@ -176,6 +198,7 @@ public class OpenAlbum extends AppCompatActivity {
         intent.putExtra("albumIndex", albumIndex);
         intent.putExtra("albumName", albumName.getText().toString());
         startActivityForResult(intent, REQUEST_IMAGE_GET);
+
     }
     private void saveAlbumsToFile() {
         JSONArray albums = new JSONArray();
@@ -220,8 +243,8 @@ public class OpenAlbum extends AppCompatActivity {
             // if filepath not null, add to the album
             if (filePath != null) {
                 Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
-                saveAlbumsToFile();
                 imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
+                saveAlbumsToFile();
             } else {
                 Toast.makeText(this, "No photo selected", Toast.LENGTH_SHORT).show();
             }
@@ -233,6 +256,7 @@ public class OpenAlbum extends AppCompatActivity {
                     System.out.println(photo.getFilePath());
                 }
             }
+
         }
     }
 }

@@ -222,9 +222,16 @@ public class Photos extends AppCompatActivity implements Serializable {
     }
 
     private void showAlbum(int pos) {
+        // debugging: print the name of the selected album
+        System.out.println("Selected album: " + albums.get(pos).getAlbumName());
+
+        // print pos
+        System.out.println("Selected album index: " + pos);
+
+        // create an intent to open the album
         Intent intent = new Intent(this, OpenAlbum.class);
-        intent.putExtra(OpenAlbum.ALBUM_INDEX, pos);
-        intent.putExtra(OpenAlbum.ALBUM_NAME, albums.get(pos).getAlbumName());
+        intent.putExtra("albumIndex", pos);
+        intent.putExtra("albumName", albums.get(pos).getAlbumName());
         startForAlbumOpen.launch(intent);
     }
 
