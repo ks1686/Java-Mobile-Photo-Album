@@ -35,8 +35,6 @@ public class OpenPhoto extends AppCompatActivity {
         nextPhotoButton = findViewById(R.id.next_photo_button);
         editTagsButton = findViewById(R.id.edit_tags_button);
         moveButton = findViewById(R.id.move_button);
-        tagsScrollView = findViewById(R.id.tags_scrollview);
-        tagsLinearLayout = findViewById(R.id.tags_linearlayout);
         tagsTextView = findViewById(R.id.tags_textView);
 
         // TODO: Setup listeners here
