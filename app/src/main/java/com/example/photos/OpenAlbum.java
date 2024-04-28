@@ -209,10 +209,12 @@ public class OpenAlbum extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
-            // grant uri permissions
-            getContentResolver().takePersistableUriPermission(data.getData(), Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
             Uri uri = data.getData();
+
+            // get READ_URI_PERMISSION
+            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
             // get the string filepath for the single photo
             String filePath = uri.toString();
             // if filepath not null, add to the album
