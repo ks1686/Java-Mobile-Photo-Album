@@ -77,13 +77,21 @@ public class OpenAlbum extends AppCompatActivity {
 
         // inner class to hold the image view
         public class ImageViewHolder extends RecyclerView.ViewHolder {
-            public ImageView imageView;
+            ImageView imageView;
 
             public ImageViewHolder(@NonNull View itemView) {
                 super(itemView);
                 imageView = itemView.findViewById(R.id.image_view);
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // open display photo view here
+                        System.out.println("Photo clicked");
+                    }
+                });
             }
         }
+
     }
 
     public static String ALBUM_NAME = "albumName";
@@ -187,7 +195,7 @@ public class OpenAlbum extends AppCompatActivity {
             Toast.makeText(this, "An album with name already exists.", Toast.LENGTH_SHORT).show();
             return;
         }
-        saveAlbumsToFile();
+        Photos.saveAlbumsToFile(this);
 
         //toast to show that the album has been renamed
         Toast.makeText(this, "Album renamed", Toast.LENGTH_SHORT).show();
@@ -200,32 +208,6 @@ public class OpenAlbum extends AppCompatActivity {
         intent.putExtra("albumName", albumName.getText().toString());
         startActivityForResult(intent, REQUEST_IMAGE_GET);
 
-    }
-    private void saveAlbumsToFile() {
-        File file = new File(getFilesDir(), "albums.json");
-        try {
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            FileOutputStream fos = new FileOutputStream(file);
-            JSONArray jsonArray = new JSONArray();
-            for (Album album : Photos.albums) {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("albumName", album.getAlbumName());
-                JSONArray photosJsonArray = new JSONArray();
-                for (Photo photo : album.getPhotos()) {
-                    JSONObject photoJsonObject = new JSONObject();
-                    photoJsonObject.put("name", photo.getFilePath());
-                    photosJsonArray.put(photoJsonObject);
-                }
-                jsonObject.put("photos", photosJsonArray);
-                jsonArray.put(jsonObject);
-            }
-            fos.write(jsonArray.toString().getBytes());
-            fos.close();
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     // method to save the updated album with the new photo
@@ -246,9 +228,9 @@ public class OpenAlbum extends AppCompatActivity {
             if (filePath != null) {
                 Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
                 imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
-                saveAlbumsToFile();
             } else {
                 Toast.makeText(this, "No photo selected", Toast.LENGTH_SHORT).show();
+                return;
             }
 
             // print all albums and their photos
@@ -261,7 +243,7 @@ public class OpenAlbum extends AppCompatActivity {
             }
 
             System.out.println("In onActivityResult in OpenAlbum.java, albums is " + Photos.albums);
-
+            Photos.saveAlbumsToFile(this);
         }
     }
 }

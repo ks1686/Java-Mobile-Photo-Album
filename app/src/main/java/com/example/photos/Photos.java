@@ -3,6 +3,7 @@ package com.example.photos;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -61,8 +62,10 @@ public class Photos extends AppCompatActivity implements Serializable {
         return albumNames;
     }
 
-    private void saveAlbumsToFile() {
-        File file = new File(getFilesDir(), "albums.json");
+    public static void saveAlbumsToFile(Context context) {
+        System.out.println("In saveAlbumsToFile. Albums is: " + Photos.albums);
+        File file = new File(context.getFilesDir(), "albums.json");
+        System.out.println("Saving to the following path: " + context.getFilesDir() + "/albums.json");
         try {
             if (!file.exists()) {
                 file.createNewFile();
@@ -85,6 +88,22 @@ public class Photos extends AppCompatActivity implements Serializable {
             fos.close();
         } catch (IOException | JSONException e) {
             e.printStackTrace();
+        }
+
+        // now print out the contents of /data/user/0/com.example.photos/files/albums.json
+        String path = context.getFilesDir() + "/albums.json";
+        try {
+            FileInputStream fis = new FileInputStream(path);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fis));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line2;
+            while ((line2 = bufferedReader.readLine()) != null) {
+                stringBuilder.append(line2);
+            }
+            System.out.println("Contents of albums.json: " + stringBuilder.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+
         }
     }
 
@@ -145,11 +164,11 @@ public class Photos extends AppCompatActivity implements Serializable {
         createAlbumButton.setOnClickListener(view -> createAlbum());
 
         // temp: delete albums.json for debugging
-        File file = new File(getFilesDir(), "albums.json");
-        file.delete();
+        // File file = new File(getFilesDir(), "albums.json");
+        // file.delete();
 
         albums = loadAlbums();
-        saveAlbumsToFile();
+        saveAlbumsToFile(this);
         // albums.json will store the list of albums and their photos
 
         listView = findViewById(R.id.albums_list);
@@ -187,7 +206,6 @@ public class Photos extends AppCompatActivity implements Serializable {
             // update the album name
             Photos.albums.get(albumIndex).setAlbumName(albumName);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
-            saveAlbumsToFile();
 
             // print all images in the album
             for (Photo photo : Photos.albums.get(albumIndex).getPhotos()) {
@@ -200,8 +218,9 @@ public class Photos extends AppCompatActivity implements Serializable {
             int albumIndex = data.getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
             Photos.albums.remove(albumIndex);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
-            saveAlbumsToFile();
+
         }
+        saveAlbumsToFile(this);
     }
 
     private void showAlbum(int pos) {
@@ -236,7 +255,7 @@ public class Photos extends AppCompatActivity implements Serializable {
 
             Photos.albums.add(new Album(albumName));
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
-            saveAlbumsToFile();
+            saveAlbumsToFile(this);
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
         builder.show();
@@ -262,7 +281,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     @Override
     protected void onPause() {
         super.onPause();
-        saveAlbumsToFile();
+        saveAlbumsToFile(this);
     }
 
     // on resume load the albums from the file
@@ -277,7 +296,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        saveAlbumsToFile();
+        saveAlbumsToFile(this);
     }
 
     // on restart load the albums from the file
@@ -292,7 +311,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     @Override
     protected void onStop() {
         super.onStop();
-        saveAlbumsToFile();
+        saveAlbumsToFile(this);
     }
 
 }
