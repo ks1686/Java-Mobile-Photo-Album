@@ -280,4 +280,42 @@ public class Photos extends AppCompatActivity implements Serializable {
         }
         return super.onOptionsItemSelected(item);
     }
+
+    // on pause save the albums to the file
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveAlbumsToFile();
+    }
+
+    // on resume load the albums from the file
+    @Override
+    protected void onResume() {
+        super.onResume();
+        albums = loadAlbums();
+        listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+    }
+
+    // on destroy save the albums to the file
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        saveAlbumsToFile();
+    }
+
+    // on restart load the albums from the file
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        albums = loadAlbums();
+        listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+    }
+
+    // on stop save the albums to the file
+    @Override
+    protected void onStop() {
+        super.onStop();
+        saveAlbumsToFile();
+    }
+
 }
