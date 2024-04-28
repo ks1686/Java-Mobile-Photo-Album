@@ -19,6 +19,8 @@ public class OpenPhoto extends AppCompatActivity {
     private Button nextPhotoButton;
     private Button editTagsButton;
     private Button moveButton;
+    private Button deleteButton;
+
     private NestedScrollView tagsScrollView;
     private ConstraintLayout tagsLinearLayout;
     private TextView tagsTextView;
@@ -35,8 +37,15 @@ public class OpenPhoto extends AppCompatActivity {
         nextPhotoButton = findViewById(R.id.next_photo_button);
         editTagsButton = findViewById(R.id.edit_tags_button);
         moveButton = findViewById(R.id.move_button);
+        deleteButton = findViewById(R.id.delete_button);
         tagsTextView = findViewById(R.id.tags_textView);
 
         // TODO: Setup listeners here
+
+        // Set the toolbar as the action bar for the activity
+        setSupportActionBar(displayPhotoToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+
     }
 }
