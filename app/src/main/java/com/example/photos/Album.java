@@ -48,8 +48,8 @@ public class Album implements Serializable {
         if (photos == null) {
             throw new NullPointerException("photos cannot be null");
         }
-
         this.albumName = albumName;
+        setAlbumName(albumName); // throws error if album with same name already exists
         this.photos = photos;
     }
 
@@ -86,6 +86,9 @@ public class Album implements Serializable {
      * @return arrayList of photos
      */
     public List<Photo> getPhotos() {
+        if (this.photos == null) {
+            return new ArrayList<>();
+        }
         return new ArrayList<>(this.photos);
     }
 
@@ -110,6 +113,14 @@ public class Album implements Serializable {
             throw new NullPointerException("albumName cannot be null");
         } else if (albumName.isEmpty()) {
             throw new IllegalArgumentException("albumName cannot be empty");
+        }
+
+        // check if there is another album with the same name
+        // potential issue: looks through static list of albums (but works)
+        for (Album album : Photos.albums) {
+            if (album.getAlbumName().equals(albumName) && !album.equals(this)) {
+                throw new IllegalArgumentException("Album with the same name already exists");
+            }
         }
         this.albumName = albumName;
     }
@@ -137,6 +148,19 @@ public class Album implements Serializable {
         return "Album: " + this.albumName + "\nPhotos:\n" + result;
     }
 
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof Album)) {
+            return false;
+        }
+
+        Album album = (Album) o;
+
+        return album.getAlbumName().equals(this.albumName) && album.getPhotos().equals(this.photos);
+    }
 
     /**
      * search for photos in the album based on a query

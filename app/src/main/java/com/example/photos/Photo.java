@@ -44,6 +44,19 @@ public class Photo implements Serializable {
         this(filepath, new ArrayList<Map<String, String>>());
     }
 
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof Photo)) {
+            return false;
+        }
+
+        Photo photo = (Photo) obj;
+        return filepath.equals(photo.filepath);
+    }
+
     public void deleteTag(String key, String value) {
         for (int i = 0; i < tags.size(); i++) {
             if (tags.get(i).containsKey(key) && tags.get(i).containsValue(value)) {

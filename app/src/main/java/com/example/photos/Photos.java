@@ -89,6 +89,8 @@ public class Photos extends AppCompatActivity implements Serializable {
     }
 
     private List<Album> loadAlbums() {
+        Photos.albums = new ArrayList<>(); // otherwise, when creating a new album,
+        // it will raise an error because it will try to create an album with the same name
         List<Album> albumsTemp = new ArrayList<>();
         File file = new File(getFilesDir(), "albums.json");
         try {
@@ -143,8 +145,8 @@ public class Photos extends AppCompatActivity implements Serializable {
         createAlbumButton.setOnClickListener(view -> createAlbum());
 
         // temp: delete albums.json for debugging
-        // File file = new File(getFilesDir(), "albums.json");
-        // file.delete();
+        File file = new File(getFilesDir(), "albums.json");
+        file.delete();
 
         albums = loadAlbums();
         saveAlbumsToFile();

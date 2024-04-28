@@ -158,7 +158,8 @@ public class OpenAlbum extends AppCompatActivity {
 
 
     public void returnToAlbumsList(){
-        String album_name_string = albumName.getText().toString();
+        Album currentAlbum = Photos.albums.get(albumIndex);
+        String album_name_string = currentAlbum.getAlbumName();
 
         Bundle bundle = new Bundle();
         bundle.putString(ALBUM_NAME, album_name_string);
@@ -180,7 +181,12 @@ public class OpenAlbum extends AppCompatActivity {
     // method to rename the album
     public void renameAlbum() {
         String albumNameString = albumName.getText().toString();
-        Photos.albums.get(albumIndex).setAlbumName(albumNameString);
+        try {
+            Photos.albums.get(albumIndex).setAlbumName(albumNameString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(this, "An album with name already exists.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         saveAlbumsToFile();
 
         //toast to show that the album has been renamed
