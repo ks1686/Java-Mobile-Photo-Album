@@ -42,6 +42,8 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import android.text.TextWatcher;
 import android.text.Editable;
 
@@ -82,17 +84,20 @@ public class Photos extends AppCompatActivity implements Serializable {
                 for (Photo photo : album.getPhotos()) {
                     JSONObject photoJsonObject = new JSONObject();
                     photoJsonObject.put("name", photo.getFilePath());
-                    photosJsonArray.put(photoJsonObject);
 
-                    // each photo has a map of tags, so we need to save the tags as well
-                    // for each photo, we need to save the tags
-                    for (int i = 0; i < photo.getTags().size(); i++) {
+                    // Add tags to the photoJsonObject
+                    JSONArray tagsJsonArray = new JSONArray();
+                    List<Map<String, String>> tags = photo.getTags();
+                    for (Map<String, String> tag : tags) {
                         JSONObject tagJsonObject = new JSONObject();
-                        tagJsonObject.put("key", photo.getTags().get(i).get("key"));
-                        tagJsonObject.put("value", photo.getTags().get(i).get("value"));
-                        photosJsonArray.put(tagJsonObject);
+                        for (Map.Entry<String, String> entry : tag.entrySet()) {
+                            tagJsonObject.put("key", entry.getKey());
+                            tagJsonObject.put("value", entry.getValue());
+                        }
+                        tagsJsonArray.put(tagJsonObject);
                     }
-
+                    photoJsonObject.put("tags", tagsJsonArray);
+                    photosJsonArray.put(photoJsonObject);
                 }
                 jsonObject.put("photos", photosJsonArray);
                 jsonArray.put(jsonObject);
@@ -121,8 +126,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     }
 
     private List<Album> loadAlbums() {
-        Photos.albums = new ArrayList<>(); // otherwise, when creating a new album,
-        // it will raise an error because it will try to create an album with the same name
+        Photos.albums = new ArrayList<>();
         List<Album> albumsTemp = new ArrayList<>();
         File file = new File(getFilesDir(), "albums.json");
         try {
@@ -140,15 +144,18 @@ public class Photos extends AppCompatActivity implements Serializable {
                 JSONArray photosJsonArray = jsonObject.getJSONArray("photos");
                 for (int j = 0; j < photosJsonArray.length(); j++) {
                     JSONObject photoJsonObject = photosJsonArray.getJSONObject(j);
-                    // load the tags for photos
                     String photoFilePath = photoJsonObject.getString("name");
                     Photo photo = new Photo(photoFilePath);
 
-                    // if the photoJsonObject has a key, then it is a tag
-                    if (photoJsonObject.has("key")) {
-                        String key = photoJsonObject.getString("key");
-                        String value = photoJsonObject.getString("value");
-                        photo.addTag(key, value);
+                    // Load the tags for photos
+                    if (photoJsonObject.has("tags")) {
+                        JSONArray tagsJsonArray = photoJsonObject.getJSONArray("tags");
+                        for (int k = 0; k < tagsJsonArray.length(); k++) {
+                            JSONObject tagJsonObject = tagsJsonArray.getJSONObject(k);
+                            String key = tagJsonObject.getString("key");
+                            String value = tagJsonObject.getString("value");
+                            photo.addTag(key, value);
+                        }
                     }
                     album.addPhoto(photo);
                 }
@@ -159,7 +166,6 @@ public class Photos extends AppCompatActivity implements Serializable {
         }
         return albumsTemp;
     }
-
     // method to request permission for image` access using READ_MEDIA_IMAGE
     private void requestPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
@@ -196,7 +202,7 @@ public class Photos extends AppCompatActivity implements Serializable {
         searchBar.setHint("Search (enter tag values to search for photos)");
         // when user types, print out the text
 
-        // temp: delete albums.json for debugging
+        // temp: delete albums.json for debugging. CAREFUL: this is called everytime onCreate() is called
         // File file = new File(getFilesDir(), "albums.json");
         // file.delete();
 

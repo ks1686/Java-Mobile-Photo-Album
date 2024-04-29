@@ -172,6 +172,7 @@ public class OpenPhoto extends AppCompatActivity {
         builder.setView(valueEditText);
 
         builder.setPositiveButton("Add", (dialog, which) -> {
+            System.out.println("Pressed ok button");
             String key = tags[checkedItem[0]];
             String value = valueEditText.getText().toString();
 
@@ -189,6 +190,7 @@ public class OpenPhoto extends AppCompatActivity {
             try {
                 photo[0].addTag(key, value);
                 setTagsText();
+                Photos.saveAlbumsToFile(this);
             } catch (NullPointerException e) {
                 Toast.makeText(this, "Key or value cannot be null", Toast.LENGTH_SHORT).show();
                 return;
@@ -199,6 +201,7 @@ public class OpenPhoto extends AppCompatActivity {
         });
 
         // save the changes
+        System.out.println("Added tag, saving changes");
         Photos.saveAlbumsToFile(this);
         builder.create().show();
     }
