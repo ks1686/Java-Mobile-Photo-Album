@@ -121,10 +121,10 @@
         app:layout_constraintTop_toBottomOf="@+id/prev_photo_button" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/back_to_album"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button"
+        android:text="Back"
         tools:layout_editor_absoluteX="199dp"
         tools:layout_editor_absoluteY="16dp" />
 
