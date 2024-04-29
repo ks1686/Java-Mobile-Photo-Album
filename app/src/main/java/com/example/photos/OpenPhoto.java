@@ -4,7 +4,10 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,8 +19,8 @@ import androidx.core.widget.NestedScrollView;
 
 import com.example.movies.R;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class OpenPhoto extends AppCompatActivity {
 
@@ -30,7 +33,8 @@ public class OpenPhoto extends AppCompatActivity {
     private ImageView photoView;
     private Button prevPhotoButton;
     private Button nextPhotoButton;
-    private Button editTagsButton;
+    private Button addTagButton;
+    private Button removeTagButton;
     private Button moveButton;
     private Button deleteButton;
     private Button backButton;
@@ -53,11 +57,14 @@ public class OpenPhoto extends AppCompatActivity {
         photoView = findViewById(R.id.photo_view);
         prevPhotoButton = findViewById(R.id.prev_photo_button);
         nextPhotoButton = findViewById(R.id.next_photo_button);
-        editTagsButton = findViewById(R.id.edit_tags_button);
+        addTagButton = findViewById(R.id.add_tag);
+        removeTagButton = findViewById(R.id.remove_tag);
         moveButton = findViewById(R.id.move_button);
         deleteButton = findViewById(R.id.delete_button);
         tagsTextView = findViewById(R.id.tags_textView);
         backButton = findViewById(R.id.back_button);
+
+        setTagsText();
 
         // Set the toolbar as the action bar for the activity
         setSupportActionBar(displayPhotoToolbar);
@@ -79,13 +86,118 @@ public class OpenPhoto extends AppCompatActivity {
         // set listeners for each of the buttons
         prevPhotoButton.setOnClickListener(view -> prevPhoto());
         nextPhotoButton.setOnClickListener(view -> nextPhoto());
-        // editTagsButton.setOnClickListener(view -> editTags());
+        addTagButton.setOnClickListener(view -> addTag());
+        removeTagButton.setOnClickListener(view -> removeTag());
         moveButton.setOnClickListener(view -> movePhoto());
         deleteButton.setOnClickListener(view -> deletePhoto());
         backButton.setOnClickListener(view -> backToAlbum());
 
 
 
+    }
+
+    public void setTagsText() {
+        // set the text of tagsTextView to the tags of the photo
+        Album album = Photos.albums.get(albumIndex);
+        List<Photo> photos = album.getPhotos();
+        for (Photo p : photos) {
+            if (p.getFilePath().equals(photoFilepath)) {
+                List<Map<String, String>> tags = p.getTags();
+                StringBuilder tagsString = new StringBuilder();
+                for (Map<String, String> tag : tags) {
+                    String key = tag.keySet().iterator().next();
+                    String value = tag.get(key);
+                    tagsString.append(key).append(": ").append(value).append("\n");
+                }
+                tagsTextView.setText(tagsString.toString());
+                break;
+            }
+        }
+    }
+
+    public void removeTag() {
+        // create a pop up dialog (AlertDialog) to select the tag to remove
+        // remove the selected tag from the photo
+
+        System.out.println("removeTag");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select a tag to remove");
+
+        // create a list of tags to select from
+        Album album = Photos.albums.get(albumIndex);
+        List<Photo> photos = album.getPhotos();
+        final Photo[] photo = new Photo[1];
+        for (Photo p : photos) {
+            if (p.getFilePath().equals(photoFilepath)) {
+                photo[0] = p;
+                break;
+            }
+        }
+
+
+        List<Map<String, String>> tags = photo[0].getTags();
+        String[] tagStrings = new String[tags.size()];
+        for (int i = 0; i < tags.size(); i++) {
+            Map<String, String> tag = tags.get(i);
+            String key = tag.keySet().iterator().next();
+            String value = tag.get(key);
+            tagStrings[i] = key + ": " + value;
+        }
+
+        builder.setItems(tagStrings, (dialog, which) -> {
+            Map<String, String> tag = tags.get(which);
+            String key = tag.keySet().iterator().next();
+            String value = tag.get(key);
+            photo[0].deleteTag(key, value);
+            setTagsText();
+        });
+        builder.create().show();
+    }
+
+    public void addTag() {
+        System.out.println("addTag");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add Tag");
+
+        // tags can only be "person" or "location", so we can use a single-choice item dialog
+        String[] tags = {"person", "location"};
+        final int[] checkedItem = {0}; // this will be used to get the selected item
+
+        builder.setSingleChoiceItems(tags, 0, (dialog, which) -> checkedItem[0] = which);
+
+        EditText valueEditText = new EditText(this);
+        valueEditText.setHint("Value");
+        valueEditText.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        builder.setView(valueEditText);
+
+        builder.setPositiveButton("Add", (dialog, which) -> {
+            String key = tags[checkedItem[0]];
+            String value = valueEditText.getText().toString();
+
+            // get the current photo from the current album
+            Album album = Photos.albums.get(albumIndex);
+            List<Photo> photos = album.getPhotos();
+            final Photo[] photo = new Photo[1];
+            for (Photo p : photos) {
+                if (p.getFilePath().equals(photoFilepath)) {
+                    photo[0] = p;
+                    break;
+                }
+            }
+            // photo should not be null atp
+            try {
+                photo[0].addTag(key, value);
+                setTagsText();
+            } catch (NullPointerException e) {
+                Toast.makeText(this, "Key or value cannot be null", Toast.LENGTH_SHORT).show();
+                return;
+            } catch (IllegalArgumentException e) {
+                Toast.makeText(this, "Key or value cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        });
+        builder.create().show();
     }
 
     @Override

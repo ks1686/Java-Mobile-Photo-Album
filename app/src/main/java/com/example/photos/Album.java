@@ -205,7 +205,7 @@ public class Album implements Serializable {
             }
             for (Photo photo : this.photos) {
                 for (Map<String, String> currentTag : photo.getTags()) {
-                    if (currentTag.containsKey(tag[0]) && currentTag.containsValue(tag[1])) {
+                    if (currentTag.containsKey(tag[0]) && currentTag.get(tag[0]).startsWith(tag[1])) {
                         result.add(photo);
                     }
                 }
@@ -226,10 +226,10 @@ public class Album implements Serializable {
                     boolean found1 = false;
                     boolean found2 = false;
                     for (Map<String, String> tag : photo.getTags()) {
-                        if (tag.containsKey(tag1[0]) && tag.containsValue(tag1[1])) {
+                        if (tag.containsKey(tag1[0]) && tag.get(tag1[0]).startsWith(tag1[1])) {
                             found1 = true;
                         }
-                        if (tag.containsKey(tag2[0]) && tag.containsValue(tag2[1])) {
+                        if (tag.containsKey(tag2[0]) && tag.get(tag2[0]).startsWith(tag2[1])) {
                             found2 = true;
                         }
                     }
@@ -246,10 +246,10 @@ public class Album implements Serializable {
                     boolean found1 = false;
                     boolean found2 = false;
                     for (Map<String, String> tag : photo.getTags()) {
-                        if (tag.containsKey(tag1[0]) && tag.containsValue(tag1[1])) {
+                        if (tag.containsKey(tag1[0]) && tag.get(tag1[0]).startsWith(tag1[1])) {
                             found1 = true;
                         }
-                        if (tag.containsKey(tag2[0]) && tag.containsValue(tag2[1])) {
+                        if (tag.containsKey(tag2[0]) && tag.get(tag2[0]).startsWith(tag2[1])) {
                             found2 = true;
                         }
                     }

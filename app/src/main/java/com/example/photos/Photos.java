@@ -42,6 +42,8 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import android.text.TextWatcher;
+import android.text.Editable;
 
 
 public class Photos extends AppCompatActivity implements Serializable {
@@ -53,6 +55,7 @@ public class Photos extends AppCompatActivity implements Serializable {
     public static List<Album> albums;
     private transient ActivityResultLauncher<Intent> startForAlbumOpen;
     private transient ActivityResultLauncher<Intent> cancelForAlbumOpen;
+    private EditText searchBar;
 
     public List<String> getAlbumNames() {
         List<String> albumNames = new ArrayList<>();
@@ -168,6 +171,11 @@ public class Photos extends AppCompatActivity implements Serializable {
         FloatingActionButton createAlbumButton = findViewById(R.id.create_album_button);
         createAlbumButton.setOnClickListener(view -> createAlbum());
 
+        searchBar = findViewById(R.id.search_bar);
+        // set the hint for the search bar
+        searchBar.setHint("Search (enter tag values to search for photos)");
+        // when user types, print out the text
+
         // temp: delete albums.json for debugging
         // File file = new File(getFilesDir(), "albums.json");
         // file.delete();
@@ -198,6 +206,19 @@ public class Photos extends AppCompatActivity implements Serializable {
         cancelForAlbumOpen = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 this::applyAlbumEdit);
+    }
+    public Album searchPhotos(String tag) {
+        Album retAlbum = new Album("Search Results");
+
+        // go through every album, and do search() on every album to get a list of photo that matches.
+        // then, add the photos to retAlbum
+        for (Album album : Photos.albums) {
+            List<Photo> photos = album.search(tag);
+            for (Photo photo : photos) {
+                retAlbum.addPhoto(photo);
+            }
+        }
+        return retAlbum;
     }
 
     private void applyAlbumEdit(ActivityResult result) {

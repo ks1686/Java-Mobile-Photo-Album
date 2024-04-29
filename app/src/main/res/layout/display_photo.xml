@@ -24,12 +24,11 @@
 
     <ImageView
         android:id="@+id/photo_view"
-        android:layout_width="382dp"
-        android:layout_height="203dp"
-        android:layout_marginTop="160dp"
+        android:layout_width="323dp"
+        android:layout_height="357dp"
+        android:layout_marginTop="104dp"
         android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/display_photo_toolbar" />
 
@@ -61,11 +60,11 @@
 
 
     <Button
-        android:id="@+id/edit_tags_button"
-        android:layout_width="wrap_content"
+        android:id="@+id/remove_tag"
+        android:layout_width="110dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:text="Edit Tags"
+        android:text="Remove Tag"
         app:layout_constraintEnd_toEndOf="parent"
         tools:layout_editor_absoluteY="0dp" />
 
@@ -128,5 +127,13 @@
         android:text="Back"
         tools:layout_editor_absoluteX="10dp"
         tools:layout_editor_absoluteY="4dp" />
+
+    <Button
+        android:id="@+id/add_tag"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Add Tag"
+        app:layout_constraintEnd_toStartOf="@+id/remove_tag"
+        tools:layout_editor_absoluteY="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
