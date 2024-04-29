@@ -85,6 +85,7 @@ public class OpenPhoto extends AppCompatActivity {
         backButton.setOnClickListener(view -> backToAlbum());
 
 
+
     }
 
     @Override
@@ -96,17 +97,34 @@ public class OpenPhoto extends AppCompatActivity {
     }
 
     public void nextPhoto() {
-        // get the next photo from the album
-        // display the next photo in the photoView
+        // go to the next photo in the album
+        // if there is no next photo, display a message saying that there are no more photos in the album
         System.out.println("nextPhoto");
-        int nextPhotoIndex = albumIndex + 1;
-        if (nextPhotoIndex >= Photos.albums.size()) {
-            nextPhotoIndex = 0;
+        Album album = Photos.albums.get(albumIndex);
+        List<Photo> photos = album.getPhotos();
+        int index = -1;
+        for (int i = 0; i < photos.size(); i++) {
+            if (photos.get(i).getFilePath().equals(photoFilepath)) {
+                index = i;
+                break;
+            }
         }
-
-        Album album = Photos.albums.get(nextPhotoIndex);
-        Photo nextPhoto = album.getPhotos().get(0);
-        displayPhoto(nextPhoto.getFilePath());
+        if (index == -1) {
+            System.out.println("Error: photo not found in album");
+            return;
+        }
+        if (index == photos.size() - 1) {
+            Toast.makeText(this, "No more photos in the album", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String nextPhotoFilepath = photos.get(index + 1).getFilePath();
+        Intent intent = new Intent(this, OpenPhoto.class);
+        Bundle bundle = new Bundle();
+        bundle.putString(OpenPhoto.PHOTO_FILEPATH, nextPhotoFilepath);
+        bundle.putInt(OpenPhoto.ALBUM_INDEX, albumIndex);
+        intent.putExtras(bundle);
+        startActivity(intent);
+        finish();
     }
 
 
@@ -148,7 +166,7 @@ public class OpenPhoto extends AppCompatActivity {
                 }
             }
             // print current album size
-            System.out.println("(afteR) current album size: " + currentAlbum.getSize());
+            System.out.println("(after) current album size: " + currentAlbum.getSize());
             // finish();
             backToAlbum();
             // it works when you do backToAlbum, but not finish()
@@ -161,35 +179,53 @@ public class OpenPhoto extends AppCompatActivity {
     public void deletePhoto() {
         // delete the photo from the album
         // go back to the album view
+        System.out.println("deletePhoto");
         Album album = Photos.albums.get(albumIndex);
-        // go through album photos and find the photo to delete
         for (int i = 0; i < album.getSize(); i++) {
             if (album.getPhotos().get(i).getFilePath().equals(photoFilepath)) {
-                // get photo with index i
-                Photo photo = album.getPhotos().get(i);
-                album.removePhoto(photo);
-                break;
+                album.removePhoto(album.getPhotos().get(i));
             }
         }
-        finish();
+
+
+        backToAlbum();
     }
 
 
     public void prevPhoto() {
-        // get the previous photo from the album
-        // display the previous photo in the photoView
+        // go to the previous photo in the album
+        // if there is no previous photo, display a message saying that there are no more photos in the album
         System.out.println("prevPhoto");
-        int prevPhotoIndex = albumIndex - 1;
-        if (prevPhotoIndex < 0) {
-            prevPhotoIndex = Photos.albums.size() - 1;
+        Album album = Photos.albums.get(albumIndex);
+        List<Photo> photos = album.getPhotos();
+        int index = -1;
+        for (int i = 0; i < photos.size(); i++) {
+            if (photos.get(i).getFilePath().equals(photoFilepath)) {
+                index = i;
+                break;
+            }
         }
-
-        Album album = Photos.albums.get(prevPhotoIndex);
-        Photo prevPhoto = album.getPhotos().get(album.getSize() - 1);
-        displayPhoto(prevPhoto.getFilePath());
+        if (index == -1) {
+            System.out.println("Error: photo not found in album");
+            return;
+        }
+        if (index == 0) {
+            Toast.makeText(this, "No more photos in the album", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String prevPhotoFilepath = photos.get(index - 1).getFilePath();
+        Intent intent = new Intent(this, OpenPhoto.class);
+        Bundle bundle = new Bundle();
+        bundle.putString(OpenPhoto.PHOTO_FILEPATH, prevPhotoFilepath);
+        bundle.putInt(OpenPhoto.ALBUM_INDEX, albumIndex);
+        intent.putExtras(bundle);
+        startActivity(intent);
+        finish();
     }
 
     public void backToAlbum() {
+        // save the changes
+        Photos.saveAlbumsToFile(this);
         // go back to the album view
         Intent intent = new Intent(this, OpenAlbum.class);
         Bundle bundle = new Bundle();
@@ -197,11 +233,11 @@ public class OpenPhoto extends AppCompatActivity {
         intent.putExtras(bundle);
         startActivity(intent);
         finish();
-
     }
 
     public void displayPhoto(String photoFilepath) {
         photoView.setImageURI(Uri.parse(photoFilepath));
     }
+
 
 }
