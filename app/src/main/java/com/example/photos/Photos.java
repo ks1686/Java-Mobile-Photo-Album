@@ -46,6 +46,9 @@ import java.util.Map;
 
 import android.text.TextWatcher;
 import android.text.Editable;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
 
 
 public class Photos extends AppCompatActivity implements Serializable {
@@ -78,6 +81,9 @@ public class Photos extends AppCompatActivity implements Serializable {
             FileOutputStream fos = new FileOutputStream(file);
             JSONArray jsonArray = new JSONArray();
             for (Album album : Photos.albums) {
+                if (album.isTempAlbum) {
+                    continue; // don't save any temporary albums
+                }
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("albumName", album.getAlbumName());
                 JSONArray photosJsonArray = new JSONArray();
@@ -200,7 +206,52 @@ public class Photos extends AppCompatActivity implements Serializable {
         searchBar = findViewById(R.id.search_bar);
         // set the hint for the search bar
         searchBar.setHint("Search (enter tag values to search for photos)");
-        // when user types, print out the text
+        searchBar.setText("");
+        // when the user types a query and presses enter, print out the query
+
+        searchBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                        actionId == EditorInfo.IME_ACTION_DONE ||
+                        event != null &&
+                                event.getAction() == KeyEvent.ACTION_DOWN &&
+                                event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    if (event == null || !event.isShiftPressed()) {
+                        // the user is done typing.
+                        String query = searchBar.getText().toString();
+                        if (query.isEmpty()) {
+                            return true;
+                        }
+                        System.out.println("Query is: " + query);
+                        try {
+                            Album searchResults = searchPhotos(query);
+                            System.out.println("Search results: " + searchResults);
+
+                            // if search results aren't empty, open the album
+                            if (searchResults.getSize() > 0) {
+                                // add to Photos.albums, set album as temp
+                                Photos.albums.add(searchResults);
+                                searchResults.isTempAlbum = true;
+                                Intent intent = new Intent(Photos.this, OpenAlbum.class);
+                                intent.putExtra("albumIndex", -1);
+                                intent.putExtra("albumName", "Search Results");
+                                intent.putExtra("searchResults", searchResults);
+                                startForAlbumOpen.launch(intent);
+                            } else {
+                                // make a toast, no results found
+                                Toast.makeText(Photos.this, "No results found (add instructions for legal query later)", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IllegalArgumentException e) {
+                            // make a toast, not a valid query
+                            Toast.makeText(Photos.this, "Not a valid query (add instructions for legal query later)", Toast.LENGTH_SHORT).show();
+                        }
+                        return true; // consume.
+                    }
+                }
+                return false; // pass on to other listeners.
+            }
+        });
 
         // temp: delete albums.json for debugging. CAREFUL: this is called everytime onCreate() is called
         // File file = new File(getFilesDir(), "albums.json");
@@ -212,6 +263,12 @@ public class Photos extends AppCompatActivity implements Serializable {
             saveAlbumsToFile(this);
         }
         // albums.json will store the list of albums and their photos
+        // remove any temp albums from the list of albums
+        for (Album album : Photos.albums) {
+            if (album.isTempAlbum) {
+                Photos.albums.remove(album);
+            }
+        }
 
         listView = findViewById(R.id.albums_list);
         listView.setAdapter(

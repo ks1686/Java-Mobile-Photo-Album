@@ -19,6 +19,7 @@ import java.util.Map;
 public class Album implements Serializable {
     private String albumName;
     private List<Photo> photos;
+    public boolean isTempAlbum = false;
 
     /**
      * Creates an album with the given name and an empty list of photos.
@@ -51,6 +52,7 @@ public class Album implements Serializable {
         this.albumName = albumName;
         setAlbumName(albumName); // throws error if album with same name already exists
         this.photos = photos;
+        this.isTempAlbum = false; // by default, must set to true manually
     }
 
     /**
@@ -189,13 +191,17 @@ public class Album implements Serializable {
         // no need to handle more than 1 conjunction or disjunction
 
         // split the query by " AND " or " OR "
-        String[] parts = query.split(" AND | OR ");
+        String[] parts = query.strip().split(" AND | OR ");
 
         // if the query is a single tag
         if (parts.length == 1) {
             // check if its of the form "tagname=tagvalue"
 
             String[] tag = query.split("=");
+            if (tag.length != 2) {
+                throw new IllegalArgumentException("Invalid query");
+            }
+
             if (!(query.strip().contains("=") || tag.length != 2 || tag[0].isEmpty() || tag[1].isEmpty())) {
                 throw new IllegalArgumentException("Invalid query");
             }
