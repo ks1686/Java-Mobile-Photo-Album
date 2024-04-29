@@ -234,7 +234,8 @@ public class Photos extends AppCompatActivity implements Serializable {
                                 Photos.albums.add(searchResults);
                                 searchResults.isTempAlbum = true;
                                 Intent intent = new Intent(Photos.this, OpenAlbum.class);
-                                intent.putExtra("albumIndex", -1);
+                                int albumIndex = Photos.albums.size() - 1;
+                                intent.putExtra("albumIndex", albumIndex);
                                 intent.putExtra("albumName", "Search Results");
                                 intent.putExtra("searchResults", searchResults);
                                 startForAlbumOpen.launch(intent);

@@ -188,7 +188,7 @@ public class OpenPhoto extends AppCompatActivity {
             }
             // photo should not be null atp
             try {
-                photo[0].addTag(key, value);
+                photo[0].addTag(key.toLowerCase(), value.toLowerCase());
                 setTagsText();
                 Photos.saveAlbumsToFile(this);
             } catch (NullPointerException e) {

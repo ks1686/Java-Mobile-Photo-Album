@@ -191,6 +191,9 @@ public class Album implements Serializable {
         // no need to handle more than 1 conjunction or disjunction
 
         // split the query by " AND " or " OR "
+        // make the query all lowercase
+        query = query.toLowerCase();
+
         String[] parts = query.strip().split(" AND | OR ");
 
         // if the query is a single tag
