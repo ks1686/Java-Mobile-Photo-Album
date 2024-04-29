@@ -83,6 +83,16 @@ public class Photos extends AppCompatActivity implements Serializable {
                     JSONObject photoJsonObject = new JSONObject();
                     photoJsonObject.put("name", photo.getFilePath());
                     photosJsonArray.put(photoJsonObject);
+
+                    // each photo has a map of tags, so we need to save the tags as well
+                    // for each photo, we need to save the tags
+                    for (int i = 0; i < photo.getTags().size(); i++) {
+                        JSONObject tagJsonObject = new JSONObject();
+                        tagJsonObject.put("key", photo.getTags().get(i).get("key"));
+                        tagJsonObject.put("value", photo.getTags().get(i).get("value"));
+                        photosJsonArray.put(tagJsonObject);
+                    }
+
                 }
                 jsonObject.put("photos", photosJsonArray);
                 jsonArray.put(jsonObject);
@@ -130,7 +140,17 @@ public class Photos extends AppCompatActivity implements Serializable {
                 JSONArray photosJsonArray = jsonObject.getJSONArray("photos");
                 for (int j = 0; j < photosJsonArray.length(); j++) {
                     JSONObject photoJsonObject = photosJsonArray.getJSONObject(j);
-                    album.addPhoto(new Photo(photoJsonObject.getString("name")));
+                    // load the tags for photos
+                    String photoFilePath = photoJsonObject.getString("name");
+                    Photo photo = new Photo(photoFilePath);
+
+                    // if the photoJsonObject has a key, then it is a tag
+                    if (photoJsonObject.has("key")) {
+                        String key = photoJsonObject.getString("key");
+                        String value = photoJsonObject.getString("value");
+                        photo.addTag(key, value);
+                    }
+                    album.addPhoto(photo);
                 }
                 albumsTemp.add(album);
             }

@@ -64,7 +64,6 @@ public class OpenPhoto extends AppCompatActivity {
         tagsTextView = findViewById(R.id.tags_textView);
         backButton = findViewById(R.id.back_button);
 
-        setTagsText();
 
         // Set the toolbar as the action bar for the activity
         setSupportActionBar(displayPhotoToolbar);
@@ -92,6 +91,7 @@ public class OpenPhoto extends AppCompatActivity {
         deleteButton.setOnClickListener(view -> deletePhoto());
         backButton.setOnClickListener(view -> backToAlbum());
 
+        setTagsText();
 
 
     }
@@ -197,6 +197,9 @@ public class OpenPhoto extends AppCompatActivity {
                 return;
             }
         });
+
+        // save the changes
+        Photos.saveAlbumsToFile(this);
         builder.create().show();
     }
 
@@ -349,6 +352,20 @@ public class OpenPhoto extends AppCompatActivity {
 
     public void displayPhoto(String photoFilepath) {
         photoView.setImageURI(Uri.parse(photoFilepath));
+    }
+
+    // on destroy, save the changes
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Photos.saveAlbumsToFile(this);
+    }
+
+    // on pause, save the changes
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Photos.saveAlbumsToFile(this);
     }
 
 
