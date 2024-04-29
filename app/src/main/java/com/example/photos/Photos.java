@@ -220,12 +220,13 @@ public class Photos extends AppCompatActivity implements Serializable {
                 System.out.println(photo.getFilePath());
             }
 
-        } else if (result.getResultCode() == Activity.RESULT_CANCELED){
+        } else if (result.getResultCode() == 2){
             // delete the album
-            Intent data = result.getData();
-            int albumIndex = data.getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
+            int albumIndex = result.getData().getIntExtra(OpenAlbum.ALBUM_INDEX, -1);
             Photos.albums.remove(albumIndex);
             listView.setAdapter(new ArrayAdapter<>(Photos.this, R.layout.album, getAlbumNames()));
+
+
 
         }
         saveAlbumsToFile(this);

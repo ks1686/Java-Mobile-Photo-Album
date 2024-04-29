@@ -163,8 +163,17 @@ public class OpenAlbum extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            albumIndex = extras.getInt("albumIndex");
+            albumIndex = extras.getInt("albumIndex", -1);
             albumName.setText(extras.getString("albumName"));
+
+            // handle if albumIndex is -1
+            if (albumIndex == -1) {
+                Toast.makeText(this, "Album index not found", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } else {
+            Toast.makeText(this, "No album index found", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         //Print albumIndex and albumName
@@ -199,10 +208,13 @@ public class OpenAlbum extends AppCompatActivity {
         finish();
     }
 
+    //custom result value for deleteAlbum
+    public static final int DELETE_ALBUM_RESULT = 2;
+
     public void deleteAlbum() {
         Intent intent = new Intent();
         intent.putExtra(ALBUM_INDEX, albumIndex);
-        setResult(RESULT_CANCELED, intent);
+        setResult(DELETE_ALBUM_RESULT, intent);
         finish();
     }
 
@@ -237,33 +249,36 @@ public class OpenAlbum extends AppCompatActivity {
         System.out.println("In onActivityResult in OpenAlbum.java");
         if (requestCode == REQUEST_IMAGE_GET && resultCode == RESULT_OK) {
 
-            Uri uri = data.getData();
+            if (data != null) {
+                Uri uri = data.getData();
 
-            // get READ_URI_PERMISSION
-            getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                // get READ_URI_PERMISSION
+                getContentResolver()
+                        .takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-            // get the string filepath for the single photo
-            String filePath = uri.toString();
-            // if filepath not null, add to the album
-            if (filePath != null) {
-                try {
-                    Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
-                } catch (IllegalArgumentException e) {
-                    Toast.makeText(this, "Photo already exists in album", Toast.LENGTH_SHORT).show();
+                // get the string filepath for the single photo
+                String filePath = uri.toString();
+                // if filepath not null, add to the album
+                if (filePath != null) {
+                    try {
+                        Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
+                    } catch (IllegalArgumentException e) {
+                        Toast.makeText(this, "Photo already exists in album", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
+                } else {
+                    Toast.makeText(this, "No photo selected", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
-            } else {
-                Toast.makeText(this, "No photo selected", Toast.LENGTH_SHORT).show();
-                return;
-            }
 
-            // print all albums and their photos
-            System.out.println("Printing out all albums and their photo filepaths");
-            for (Album album : Photos.albums) {
-                System.out.println(album.getAlbumName());
-                for (Photo photo : album.getPhotos()) {
-                    System.out.println(photo.getFilePath());
+                // print all albums and their photos
+                System.out.println("Printing out all albums and their photo filepaths");
+                for (Album album : Photos.albums) {
+                    System.out.println(album.getAlbumName());
+                    for (Photo photo : album.getPhotos()) {
+                        System.out.println(photo.getFilePath());
+                    }
                 }
             }
 
