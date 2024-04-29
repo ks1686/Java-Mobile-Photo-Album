@@ -97,7 +97,12 @@ public class OpenAlbum extends AppCompatActivity {
 
                         // create a new intent to open the photo
                         Intent intent = new Intent(context, OpenPhoto.class);
-                        intent.putExtra("photoFilePath", photoFilePath);
+
+                        // create a bundle with albumIndex and photoFilePath
+                        Bundle bundle = new Bundle();
+                        bundle.putInt("albumIndex", albumIndex);
+                        bundle.putString("photoFilepath", photoFilePath);
+                        intent.putExtras(bundle);
                         context.startActivity(intent);
                     }
                 });
@@ -125,9 +130,12 @@ public class OpenAlbum extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.open_album);
         myToolbar = findViewById(R.id.my_toolbar);
-        deleteAlbumButton = findViewById(R.id.delete_album_button);
+
         setSupportActionBar(myToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        deleteAlbumButton = findViewById(R.id.delete_album_button);
+        deleteAlbumButton.setOnClickListener(view -> deleteAlbum());
 
         addPhotoButton = findViewById(R.id.add_photo_button);
         addPhotoButton.setOnClickListener(view -> selectImage());
@@ -164,7 +172,7 @@ public class OpenAlbum extends AppCompatActivity {
 
         albumName.setText(extras.getString(ALBUM_NAME));
 
-        deleteAlbumButton.setOnClickListener(view -> deleteAlbum());
+
 
         // update the view with the correct album (based on the corret albumIndex)
         imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
@@ -238,7 +246,12 @@ public class OpenAlbum extends AppCompatActivity {
             String filePath = uri.toString();
             // if filepath not null, add to the album
             if (filePath != null) {
-                Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
+                try {
+                    Photos.albums.get(albumIndex).addPhoto(new Photo(filePath));
+                } catch (IllegalArgumentException e) {
+                    Toast.makeText(this, "Photo already exists in album", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 imageAdapter.updatePhotos(Photos.albums.get(albumIndex).getPhotos());
             } else {
                 Toast.makeText(this, "No photo selected", Toast.LENGTH_SHORT).show();

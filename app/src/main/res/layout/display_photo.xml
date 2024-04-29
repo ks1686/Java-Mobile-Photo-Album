@@ -8,7 +8,7 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/display_photo_toolbar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:background="@color/blue"
         android:minHeight="?attr/actionBarSize"
         android:textAlignment="center"
@@ -18,17 +18,18 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="Photo"
         app:titleMargin="-20dp"
         app:titleTextAppearance="@style/TextAppearance.AppCompat.Display3"
         app:titleTextColor="@color/white" />
 
     <ImageView
         android:id="@+id/photo_view"
-        android:layout_width="408dp"
-        android:layout_height="499dp"
+        android:layout_width="382dp"
+        android:layout_height="203dp"
+        android:layout_marginTop="160dp"
         android:scaleType="fitCenter"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/display_photo_toolbar" />
 
@@ -58,15 +59,15 @@
         app:layout_constraintStart_toEndOf="@+id/tags_scrollview"
         app:layout_constraintTop_toBottomOf="@+id/photo_view" />
 
+
     <Button
         android:id="@+id/edit_tags_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="16dp"
         android:text="Edit Tags"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:layout_editor_absoluteY="16dp" />
-
+        tools:layout_editor_absoluteY="0dp" />
 
     <ScrollView
         android:id="@+id/tags_scrollview"
@@ -121,11 +122,11 @@
         app:layout_constraintTop_toBottomOf="@+id/prev_photo_button" />
 
     <Button
-        android:id="@+id/back_to_album"
+        android:id="@+id/back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Back"
-        tools:layout_editor_absoluteX="199dp"
-        tools:layout_editor_absoluteY="16dp" />
+        tools:layout_editor_absoluteX="10dp"
+        tools:layout_editor_absoluteY="4dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

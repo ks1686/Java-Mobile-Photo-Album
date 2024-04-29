@@ -58,7 +58,16 @@ public class Album implements Serializable {
      *
      * @param photo the photo to add
      */
-    public void addPhoto(Photo photo) {
+    public void addPhoto(Photo photo) throws NullPointerException, IllegalArgumentException {
+        // check if photo is null or photo is already in the album. throw error
+        if (photo == null) {
+            throw new NullPointerException("photo cannot be null");
+        }
+
+        if (this.photos.contains(photo)) {
+            throw new IllegalArgumentException("Photo already exists in the album");
+        }
+
         this.photos.add(photo); // may need to catch an exception here?
     }
 

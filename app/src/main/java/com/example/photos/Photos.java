@@ -157,6 +157,11 @@ public class Photos extends AppCompatActivity implements Serializable {
         Toolbar myToolbar = findViewById(R.id.albums_toolbar);
         setSupportActionBar(myToolbar);
 
+        // make it go to main activity when back button is pressed
+        myToolbar.setNavigationOnClickListener(view -> {
+            finish();
+        });
+
         // request permission for photos access
         requestPermission();
 
@@ -167,8 +172,11 @@ public class Photos extends AppCompatActivity implements Serializable {
         // File file = new File(getFilesDir(), "albums.json");
         // file.delete();
 
-        albums = loadAlbums();
-        saveAlbumsToFile(this);
+        // if the size of the albums is 0, then load the albums from the file
+        if (Photos.albums == null || Photos.albums.size() == 0) {
+            Photos.albums = loadAlbums();
+            saveAlbumsToFile(this);
+        }
         // albums.json will store the list of albums and their photos
 
         listView = findViewById(R.id.albums_list);
