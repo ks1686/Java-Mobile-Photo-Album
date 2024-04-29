@@ -195,16 +195,14 @@ public class OpenAlbum extends AppCompatActivity {
 
 
     public void returnToAlbumsList(){
-        Album currentAlbum = Photos.albums.get(albumIndex);
-        String album_name_string = currentAlbum.getAlbumName();
+        // save the albums to the file
+        Photos.saveAlbumsToFile(this);
 
-        Bundle bundle = new Bundle();
-        bundle.putString(ALBUM_NAME, album_name_string);
-        bundle.putInt(ALBUM_INDEX, albumIndex);
 
-        Intent intent = new Intent();
-        intent.putExtras(bundle);
-        setResult(RESULT_OK, intent);
+        // go back to the main activity
+        Intent intent = new Intent(this, Photos.class);
+        startActivity(intent);
+
         finish();
     }
 
@@ -285,5 +283,15 @@ public class OpenAlbum extends AppCompatActivity {
             System.out.println("In onActivityResult in OpenAlbum.java, albums is " + Photos.albums);
             Photos.saveAlbumsToFile(this);
         }
+    }
+
+    // override back button to save the albums to the file and open the main activity
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Photos.saveAlbumsToFile(this);
+        Intent intent = new Intent(this, Photos.class);
+        startActivity(intent);
+        finish();
     }
 }

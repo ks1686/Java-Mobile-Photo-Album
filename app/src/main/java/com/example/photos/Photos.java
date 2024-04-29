@@ -323,4 +323,12 @@ public class Photos extends AppCompatActivity implements Serializable {
         saveAlbumsToFile(this);
     }
 
+    // override onBackPress
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        // kill the app, not just go back to the previous activity
+        finishAffinity();
+    }
+
 }
